@@ -30,10 +30,96 @@ To guarantee uniqueness, they should be based on the full path in a project's so
 #endif  // FOO_BAR_BAZ_HH
 ```
 
-### Include What You Use
+### Include What You Use and 
 If a source or header file refers to a symbol defined elsewhere, the file should directly include a header file which properly intends to provide a declaration or definition of that symbol. It should not include header files for any other reason.
 
 Do not rely on transitive inclusions. This allows people to remove no-longer-needed #include statements from their headers without breaking clients. This also applies to related headers - foo.cc should include bar.h if it uses a symbol from it even if foo.h includes bar.h.
+
+### Forward Declarations
+Avoid using forward declarations where possible. Instead, include the headers you need.
+
+
+### Inline Functions
+Define functions inline only when they are small, say, 10 lines or fewer.
+
+You can declare functions in a way that allows the compiler to expand them inline rather than calling them through the usual function call mechanism.
+
+Inlining a function can generate more efficient object code, as long as the inlined function is small. Feel free to inline accessors and mutators, and other short, performance-critical functions.
+
+Overuse of inlining can actually make programs slower. Depending on a function's size, inlining it can cause the code size to increase or decrease. Inlining a very small accessor function will usually decrease code size while inlining a very large function can dramatically increase code size. On modern processors smaller code usually runs faster due to better use of the instruction cache.
+
+A decent rule of thumb is to not inline a function if it is more than 10 lines long. Beware of destructors, which are often longer than they appear because of implicit member- and base-destructor calls!
+
+Another useful rule of thumb: it's typically not cost effective to inline functions with loops or switch statements (unless, in the common case, the loop or switch statement is never executed).
+
+It is important to know that functions are not always inlined even if they are declared as such; for example, virtual and recursive functions are not normally inlined. Usually recursive functions should not be inline. The main reason for making a virtual function inline is to place its definition in the class, either for convenience or to document its behavior, e.g., for accessors and mutators.
+
+### Names and Order of Includes
+Include headers in the following order: Related header, C system headers, C++ standard library headers, other libraries' headers, your project's headers.
+
+All of a project's header files should be listed as descendants of the project's source directory without use of UNIX directory aliases . (the current directory) or .. (the parent directory). For example, google-awesome-project/src/base/logging.h should be included as:
+
+```cpp
+#include "base/logging.h"
+```
+Headers should only be included using an angle-bracketed path if the library requires you to do so. In particular, the following headers require angle brackets:
+
+- C and C++ standard library headers (e.g. <stdlib.h> and <string>).
+- POSIX, Linux, and Windows system headers (e.g. <unistd.h> and <windows.h>).
+- In rare cases, third_party libraries (e.g. <Python.h>).
+
+In dir/foo.cc or dir/foo_test.cc, whose main purpose is to implement or test the stuff in dir2/foo2.h, order your includes as follows:
+
+1. dir2/foo2.h.
+1. A blank line
+1. C system headers, and any other headers in angle brackets with the .h extension, e.g., <unistd.h>, <stdlib.h>, <Python.h>.
+1. A blank line
+1. C++ standard library headers (without file extension), e.g., <algorithm>, <cstddef>.
+1. A blank line
+1. Other libraries' .h files.
+1. A blank line
+1. Your project's .h files.
+
+Separate each non-empty group with one blank line.
+
+With the preferred ordering, if the related header dir2/foo2.h omits any necessary includes, the build of dir/foo.cc or dir/foo_test.cc will break. Thus, this rule ensures that build breaks show up first for the people working on these files, not for innocent people in other packages.
+
+dir/foo.cc and dir2/foo2.h are usually in the same directory (e.g., base/basictypes_test.cc and base/basictypes.h), but may sometimes be in different directories too.
+
+Note that the C headers such as stddef.h are essentially interchangeable with their C++ counterparts (cstddef). Either style is acceptable, but prefer consistency with existing code.
+
+Within each section the includes should be ordered alphabetically. Note that older code might not conform to this rule and should be fixed when convenient.
+
+For example, the includes in google-awesome-project/src/foo/internal/fooserver.cc might look like this:
+
+```cpp
+#include "foo/server/fooserver.h"
+
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <string>
+#include <vector>
+
+#include "base/basictypes.h"
+#include "foo/server/bar.h"
+#include "third_party/absl/flags/flag.h"
+```
+
+**Exception**:
+
+Sometimes, system-specific code needs conditional includes. Such code can put conditional includes after other includes. Of course, keep your system-specific code small and localized. Example:
+
+```cpp
+#include "foo/public/fooserver.h"
+
+#include "base/port.h"  // For LANG_CXX11.
+
+#ifdef LANG_CXX11
+#include <initializer_list>
+#endif  // LANG_CXX11
+```
+
 
 ## Formatting
 
