@@ -1,6 +1,22 @@
 # Style Guide
 
-## Header Files
+# Table of Contents
+1. [Naming](#naming)
+2. [Header Files](#headers)
+3. [Formatting](#formatting)
+4. [Units](#units)
+4. [Doxogen/Sphyinx/Auto Docs](#auto-docs)
+5. [CMake File](#cmake)
+
+## Naming <a name="naming"></a>
+### Classes
+Classes that are part of the main libary should use our modified UpperCamelCase style of "G4CMPXxxYyy".  
+
+Classes that are a not a part of the main libary, i.e. examples, tests, and validation, should use UpperCamelCase but not the "G4CMP" prefix as to not confuse new users.  
+
+Files namesExample, vaildation, and test code that shouldn't be  
+
+## Header Files <a name="headers"></a>
 In general, every .cc file should have an associated .h file. There are some common exceptions, such as unit tests and small .cc files containing just a main() function.
 
 Correct use of header files can make a huge difference to the readability, size and performance of your code.
@@ -121,7 +137,7 @@ Sometimes, system-specific code needs conditional includes. Such code can put co
 ```
 
 
-## Formatting
+## Formatting <a name="formatting"></a>
 
 ### Line Length
 80 characters is the maximum.
@@ -268,3 +284,12 @@ for (int i = 0; i < 10; ++i) {
 ```
 
 ### Pointer and Reference Expressions
+
+### Change tracking
+  We have moved to git to track changes in the code.  It is no longer need to track this changes a the top of every file like we did in the bad old days.  However it is up the the developer to provide meaningful git commit messages. 
+
+## Doxogen/Sphynix <a name="auto-docs"></a>
+Look you doxogen hooks/format
+
+## Cmake <a name="cmake"></a>
+Probably don't need this.
