@@ -7,35 +7,37 @@
 4. [Units](#units)
 4. [Doxogen/Sphyinx/Auto Docs](#auto-docs)
 5. [CMake File](#cmake)
+6. [Notes](#notes)
 
 ## Naming <a name="naming"></a>
 ### Classes
-Classes that are part of the main libary should use our modified UpperCamelCase style of "G4CMPXxxYyy".  
+Classes that are part of the main libary should use our modified UpperCamelCase style of "G4CMPXxxYyy"*.  
 
-Classes that are a not a part of the main libary, i.e. examples, tests, and validation, should use UpperCamelCase but not the "G4CMP" prefix as to not confuse new users.  
+Classes that are a not a part of the main libary, i.e. examples, tests, and validation, should use UpperCamelCase but not the "G4CMP" prefix as to not confuse new users.    
 
-Files namesExample, vaildation, and test code that shouldn't be  
+*_Very early utility classes, in particular the code that handles the config.txt files (like G4LatticeLogical, etc.), and the phonon particle types, have the plain "G4" prefix.  In fact, there are versions of those classes in the G4 library.  If we change the names in G4CMP, then the G4 version will be "exposed" and confuse builds._
+
+### Files
+There should usually be one class per .cc file that follows the naming convention above.  See also [Header Files](#headers).  
 
 ## Header Files <a name="headers"></a>
-In general, every .cc file should have an associated .h file. There are some common exceptions, such as unit tests and small .cc files containing just a main() function.
+In general, every .cc file should have an associated .hh file. There are some common exceptions, such as unit tests or macros and small .cc files containing just a main() function.
 
-Correct use of header files can make a huge difference to the readability, size and performance of your code.
+Correct use of header files can make a huge difference to the readability, size and performance of your code. 
 
 The following rules will guide you through the various pitfalls of using header files.
 
 ### Self-contained Headers
-Header files should be self-contained (compile on their own) and end in .h. Non-header files that are meant for inclusion should end in .inc and be used sparingly.
+Header files should be self-contained (compile on their own) and end in .hh. Non-header files that are meant for inclusion should end in .icc and be used sparingly.
 
-All header files should be self-contained. Users and refactoring tools should not have to adhere to special conditions to include the header. Specifically, a header should have header guards and include all other headers it needs.
+Users and refactoring tools should not have to adhere to special conditions to include the header. Specifically, a header should have header guards and include all other headers it needs.
 
-When a header declares inline functions or templates that clients of the header will instantiate, the inline functions and templates must also have definitions in the header, either directly or in files it includes. Do not move these definitions to separately included header (-inl.h) files; this practice was common in the past, but is no longer allowed. When all instantiations of a template occur in one .cc file, either because they're explicit or because the definition is accessible to only the .cc file, the template definition can be kept in that file.
+[When a header declares inline functions or templates that clients of the header will instantiate, the inline functions and templates must also have definitions in the header, either directly or in files it includes. Do not move these definitions to separately included header (-inl.h) files; this practice was common in the past, but is no longer allowed. When all instantiations of a template occur in one .cc file, either because they're explicit or because the definition is accessible to only the .cc file, the template definition can be kept in that file.]: (comment)
 
-There are rare cases where a file designed to be included is not self-contained. These are typically intended to be included at unusual locations, such as the middle of another file. They might not use header guards, and might not include their prerequisites. Name such files with the .inc extension. Use sparingly, and prefer self-contained headers when possible.
+There are rare cases where a file designed to be included is not self-contained. These are typically intended to be included at unusual locations, such as the middle of another file. They might not use header guards, and might not include their prerequisites. Name such files with the .icc extension. Use sparingly, and prefer self-contained headers when possible.
 
 ### The #define Guard
-All header files should have #define guards to prevent multiple inclusion. The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
-
-To guarantee uniqueness, they should be based on the full path in a project's source tree. For example, the file foo/src/bar/baz.h in project foo should have the following guard:
+All header files should have #define guards to prevent multiple inclusion.
 
 ```cpp
 #ifndef FOO_BAR_BAZ_HH
@@ -46,13 +48,15 @@ To guarantee uniqueness, they should be based on the full path in a project's so
 #endif  // FOO_BAR_BAZ_HH
 ```
 
-### Include What You Use and 
-If a source or header file refers to a symbol defined elsewhere, the file should directly include a header file which properly intends to provide a declaration or definition of that symbol. It should not include header files for any other reason.
+### Include Headers Judiciously
+#include hurts compile time performance. Don’t do it unless you have to, especially in header files.
 
-Do not rely on transitive inclusions. This allows people to remove no-longer-needed #include statements from their headers without breaking clients. This also applies to related headers - foo.cc should include bar.h if it uses a symbol from it even if foo.h includes bar.h.
+[If a source or header file refers to a symbol defined elsewhere, the file should directly include a header file which properly intends to provide a declaration or definition of that symbol. It should not include header files for any other reason.]: (comment)
 
-### Forward Declarations
-Avoid using forward declarations where possible. Instead, include the headers you need.
+However, you must include all of the header files that you are using. It is recommended not to rely on transitive inclusions. This allows people to remove no-longer-needed #include statements from their headers without breaking clients.
+
+[### Forward Declarations
+Avoid using forward declarations where possible. Instead, include the headers you need.]: (comment)
 
 
 ### Inline Functions
@@ -293,3 +297,7 @@ Look you doxogen hooks/format
 
 ## Cmake <a name="cmake"></a>
 Probably don't need this.
+
+
+## Notes <a name="notes"></a>
+This guide was cherry-picked from the [Google C++](https://google.github.io/styleguide/cppguide.html) and [LLVM](https://llvm.org/docs/CodingStandards.html) style guides or taken from the choices of the orginal developers.
