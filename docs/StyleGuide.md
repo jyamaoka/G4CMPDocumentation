@@ -25,14 +25,10 @@ In general, every .cc file should have an associated .hh file. There are some co
 
 Correct use of header files can make a huge difference to the readability, size and performance of your code. 
 
-The following rules will guide you through the various pitfalls of using header files.
+The following rules will guide you through the various aspects of using header files.
 
 ### Self-contained Headers
 Header files should be self-contained (compile on their own) and end in .hh. Non-header files that are meant for inclusion should end in .icc and be used sparingly.
-
-Users and refactoring tools should not have to adhere to special conditions to include the header. Specifically, a header should have header guards and include all other headers it needs.
-
-[When a header declares inline functions or templates that clients of the header will instantiate, the inline functions and templates must also have definitions in the header, either directly or in files it includes. Do not move these definitions to separately included header (-inl.h) files; this practice was common in the past, but is no longer allowed. When all instantiations of a template occur in one .cc file, either because they're explicit or because the definition is accessible to only the .cc file, the template definition can be kept in that file.]: (comment)
 
 There are rare cases where a file designed to be included is not self-contained. These are typically intended to be included at unusual locations, such as the middle of another file. They might not use header guards, and might not include their prerequisites. Name such files with the .icc extension. Use sparingly, and prefer self-contained headers when possible.
 
@@ -75,30 +71,28 @@ Another useful rule of thumb: it's typically not cost effective to inline functi
 It is important to know that functions are not always inlined even if they are declared as such; for example, virtual and recursive functions are not normally inlined. Usually recursive functions should not be inline. The main reason for making a virtual function inline is to place its definition in the class, either for convenience or to document its behavior, e.g., for accessors and mutators.
 
 ### Names and Order of Includes
-Include headers in the following order: Related header, C system headers, C++ standard library headers, other libraries' headers, your project's headers.
+Include headers in the following order: G4CMP headers, G4 headers, other libraries' headers (e.g. CLHEP), C system headers, C++ standard library headers, then your project's headers.
 
-All of a project's header files should be listed as descendants of the project's source directory without use of UNIX directory aliases . (the current directory) or .. (the parent directory). For example, google-awesome-project/src/base/logging.h should be included as:
 
-```cpp
-#include "base/logging.h"
-```
 Headers should only be included using an angle-bracketed path if the library requires you to do so. In particular, the following headers require angle brackets:
 
 - C and C++ standard library headers (e.g. <stdlib.h> and <string>).
 - POSIX, Linux, and Windows system headers (e.g. <unistd.h> and <windows.h>).
 - In rare cases, third_party libraries (e.g. <Python.h>).
 
-In dir/foo.cc or dir/foo_test.cc, whose main purpose is to implement or test the stuff in dir2/foo2.h, order your includes as follows:
+In mydetector.cc order your includes as follows:
 
-1. dir2/foo2.h.
+1. G4CMPFoo.hh
 1. A blank line
-1. C system headers, and any other headers in angle brackets with the .h extension, e.g., <unistd.h>, <stdlib.h>, <Python.h>.
+1. G4Bar.hh
 1. A blank line
-1. C++ standard library headers (without file extension), e.g., <algorithm>, <cstddef>.
+1. Other libraries' .hh files
 1. A blank line
-1. Other libraries' .h files.
+1. C system headers, and any other headers in angle brackets with the .h extension, e.g., <unistd.h>, <stdlib.h>, <Python.h>
 1. A blank line
-1. Your project's .h files.
+1. C++ standard library headers (without file extension), e.g., <algorithm>, <cstddef>
+1. A blank line
+1. Your project's .hh files
 
 Separate each non-empty group with one blank line.
 
@@ -113,7 +107,11 @@ Within each section the includes should be ordered alphabetically. Note that old
 For example, the includes in google-awesome-project/src/foo/internal/fooserver.cc might look like this:
 
 ```cpp
-#include "foo/server/fooserver.h"
+#include "G4CMPFoo.hh"
+
+#include "G4Bar.hh"
+
+#include "CLHEP/Random/DoubConv.h"
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -121,9 +119,7 @@ For example, the includes in google-awesome-project/src/foo/internal/fooserver.c
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
-#include "foo/server/bar.h"
-#include "third_party/absl/flags/flag.h"
+#include "mydetector.hh"
 ```
 
 **Exception**:
