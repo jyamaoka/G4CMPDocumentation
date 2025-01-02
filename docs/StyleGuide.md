@@ -2,16 +2,16 @@
 
 # Table of Contents
 1. [Naming](#naming)
-2. [Header Files](#headers)
-3. [Formatting](#formatting)
-4. [Units](#units)
-4. [Doxogen/Sphyinx/Auto Docs](#auto-docs)
-5. [CMake File](#cmake)
-6. [Notes](#notes)
+1. [Header Files](#headers)
+1. [Formatting](#formatting)
+1. [Units](#units)
+1. [Doxogen/Sphyinx/Auto Docs](#auto-docs)
+1. [CMake File](#cmake)
+1. [Notes](#notes)
 
 ## Naming <a name="naming"></a>
 ### Classes
-Classes that are part of the main libary should use our modified UpperCamelCase style of "G4CMPXxxYyy"*.  
+Classes that are part of the main libary should use our modified UpperCamelCase style of "G4CMPFooBar"*.  
 
 Classes that are a not a part of the main libary, i.e. examples, tests, and validation, should use UpperCamelCase but not the "G4CMP" prefix as to not confuse new users.    
 
@@ -56,23 +56,18 @@ Avoid using forward declarations where possible. Instead, include the headers yo
 
 
 ### Inline Functions
-Define functions inline only when they are small, say, 10 lines or fewer.
 
 You can declare functions in a way that allows the compiler to expand them inline rather than calling them through the usual function call mechanism.
 
 Inlining a function can generate more efficient object code, as long as the inlined function is small. Feel free to inline accessors and mutators, and other short, performance-critical functions.
-
-Overuse of inlining can actually make programs slower. Depending on a function's size, inlining it can cause the code size to increase or decrease. Inlining a very small accessor function will usually decrease code size while inlining a very large function can dramatically increase code size. On modern processors smaller code usually runs faster due to better use of the instruction cache.
+ Overuse of inlining can actually make programs slower. Depending on a function's size, inlining it can cause the code size to increase or decrease.
 
 A decent rule of thumb is to not inline a function if it is more than 10 lines long. Beware of destructors, which are often longer than they appear because of implicit member- and base-destructor calls!
 
 Another useful rule of thumb: it's typically not cost effective to inline functions with loops or switch statements (unless, in the common case, the loop or switch statement is never executed).
 
-It is important to know that functions are not always inlined even if they are declared as such; for example, virtual and recursive functions are not normally inlined. Usually recursive functions should not be inline. The main reason for making a virtual function inline is to place its definition in the class, either for convenience or to document its behavior, e.g., for accessors and mutators.
-
 ### Names and Order of Includes
 Include headers in the following order: G4CMP headers, G4 headers, other libraries' headers (e.g. CLHEP), C system headers, C++ standard library headers, then your project's headers.
-
 
 Headers should only be included using an angle-bracketed path if the library requires you to do so. In particular, the following headers require angle brackets:
 
@@ -80,9 +75,9 @@ Headers should only be included using an angle-bracketed path if the library req
 - POSIX, Linux, and Windows system headers (e.g. <unistd.h> and <windows.h>).
 - In rare cases, third_party libraries (e.g. <Python.h>).
 
-In mydetector.cc order your includes as follows:
+In MyFoo.cc, whose main purpose is to implement or test the stuff in G4CMPFoo2.hh, order your includes as follows:
 
-1. G4CMPFoo.hh
+1. G4CMPFoo2.hh
 1. A blank line
 1. G4Bar.hh
 1. A blank line
@@ -96,18 +91,16 @@ In mydetector.cc order your includes as follows:
 
 Separate each non-empty group with one blank line.
 
-With the preferred ordering, if the related header dir2/foo2.h omits any necessary includes, the build of dir/foo.cc or dir/foo_test.cc will break. Thus, this rule ensures that build breaks show up first for the people working on these files, not for innocent people in other packages.
-
-dir/foo.cc and dir2/foo2.h are usually in the same directory (e.g., base/basictypes_test.cc and base/basictypes.h), but may sometimes be in different directories too.
+With the preferred ordering, if the related header G4CMPFoo2.hh omits any necessary includes, the build of MyFoo.cc will break. Thus, this rule ensures that build breaks show up first for the people working on these files, not for innocent people in other packages.
 
 Note that the C headers such as stddef.h are essentially interchangeable with their C++ counterparts (cstddef). Either style is acceptable, but prefer consistency with existing code.
 
 Within each section the includes should be ordered alphabetically. Note that older code might not conform to this rule and should be fixed when convenient.
 
-For example, the includes in google-awesome-project/src/foo/internal/fooserver.cc might look like this:
+For the above example, the includes might look like this:
 
 ```cpp
-#include "G4CMPFoo.hh"
+#include "G4CMPFoo2.hh"
 
 #include "G4Bar.hh"
 
@@ -119,12 +112,14 @@ For example, the includes in google-awesome-project/src/foo/internal/fooserver.c
 #include <string>
 #include <vector>
 
-#include "mydetector.hh"
+#include "MyFoo.hh"
 ```
 
 **Exception**:
 
-Sometimes, system-specific code needs conditional includes. Such code can put conditional includes after other includes. Of course, keep your system-specific code small and localized. Example:
+Sometimes, system-specific code needs conditional includes. Such code can put conditional includes after other includes. Of course, keep your system-specific code small and localized.  This should be very rare in our case.
+
+Example:
 
 ```cpp
 #include "foo/public/fooserver.h"
@@ -135,7 +130,6 @@ Sometimes, system-specific code needs conditional includes. Such code can put co
 #include <initializer_list>
 #endif  // LANG_CXX11
 ```
-
 
 ## Formatting <a name="formatting"></a>
 
