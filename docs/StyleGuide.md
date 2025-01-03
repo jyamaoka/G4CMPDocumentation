@@ -7,6 +7,7 @@
 1. [Units](#units)
 1. [Doxogen/Sphyinx/Auto Docs](#auto-docs)
 1. [CMake File](#cmake)
+1. [Legacy Code](#legacycode)
 1. [Notes](#notes)
 
 ## Naming <a name="naming"></a>
@@ -134,16 +135,16 @@ Example:
 ## Formatting <a name="formatting"></a>
 
 ### Line Length
-80 characters is the maximum.
+80 characters is the maximum.  
 
 A line may exceed 80 characters if it is:
 
-- a comment line which is not feasible to split without harming readability, ease of cut and paste or auto-linking -- e.g., if a line contains an example command or a literal URL longer than 80 characters.
-- a string literal that cannot easily be wrapped at 80 columns. This may be because it contains URIs or other semantically-critical pieces, or because the literal contains an embedded language, or a multiline literal whose newlines are significant like help messages. In these cases, breaking up the literal would reduce readability, searchability, ability to click links, etc. Except for test code, such literals should appear at namespace scope near the top of a file. If a tool like Clang-Format doesn't recognize the unsplittable content, disable the tool around the content as necessary.
+- A comment line which is not feasible to split without harming readability, ease of cut and paste or auto-linking -- e.g., if a line contains an example command or a literal URL longer than 80 characters.
+- A string literal that cannot easily be wrapped at 80 columns. This may be because it contains URIs or other semantically-critical pieces, or because the literal contains an embedded language, or a multiline literal whose newlines are significant like help messages. In these cases, breaking up the literal would reduce readability, searchability, ability to click links, etc.  This should be very rare for our use case.
 
-- an include statement.
-- a header guard
-- a using-declaration
+- An include statement
+- A header guard
+- A using-declaration
 
 ### Spaces vs. Tabs
 Use only spaces, and indent 2 spaces at a time.
@@ -277,10 +278,217 @@ for (int i = 0; i < 10; ++i) {
 }
 ```
 
-### Pointer and Reference Expressions
+We allow one exception to the above rules: the line breaks inside the curly braces may be omitted if as a result the entire statement appears on a single line.
+```cpp
+// OK - fits on one line.
+if (x == kFoo) { return new Foo(); }
+```
 
-### Change tracking
-  We have moved to git to track changes in the code.  It is no longer need to track this changes a the top of every file like we did in the bad old days.  However it is up the the developer to provide meaningful git commit messages. 
+
+### Pointer and Reference Expressions
+No spaces around period or arrow. Pointer operators do not have trailing spaces.
+
+The following are examples of correctly-formatted pointer and reference expressions:
+```cpp
+x = *p;
+p = &x;
+x = r.y;
+x = r->y;
+```
+
+When referring to a pointer or reference (variable declarations or definitions, arguments, return types, template parameters, etc), you may place the space before or after the asterisk/ampersand. In the trailing-space style, the space is elided in some cases (template parameters, etc).
+```cpp
+// These are fine, space preceding.
+char *c;
+const std::string &str;
+int *GetPointer();
+std::vector<char *>
+
+// These are fine, space following (or elided).
+char* c;
+const std::string& str;
+int* GetPointer();
+std::vector<char*>  // Note no space between '*' and '>'
+```
+You should do this consistently within a single file. When modifying an existing file, use the style in that file.
+
+
+### Boolean Expressions
+When you have a boolean expression that is longer than the standard line length, be consistent in how you break up the lines.
+
+In this example, the logical AND operator is always at the end of the lines:
+```cpp
+if (this_one_thing > this_other_thing &&
+    a_third_thing == a_fourth_thing &&
+    yet_another && last_one) {
+  ...
+}
+```
+Note that when the code wraps in this example, both of the && logical AND operators are at the end of the line. This is more common, though wrapping all operators at the beginning of the line is also allowed (This decision should be consistent within the file). 
+
+Feel free to insert extra parentheses judiciously because they can be very helpful in increasing readability when used appropriately, but be careful about overuse. Also note that you should always use the punctuation operators, such as && and ~, rather than the word operators, such as and and compl.
+
+### Preprocessor Directives
+
+The hash mark that starts a preprocessor directive should always be at the beginning of the line.
+
+Even when preprocessor directives are within the body of indented code, the directives should start at the beginning of the line.  
+
+```cpp
+// Good - directives at beginning of line
+  if (lopsided_score) {
+#if DISASTER_PENDING      // Correct -- Starts at beginning of line
+    DropEverything();
+# if NOTIFY               // OK but not required -- Spaces after #
+    NotifyClient();
+# endif
+#endif
+    BackToNormal();
+  }
+```
+
+### Class Format
+
+Sections in ```public```, ```protected``` and ```private``` are not indented.
+
+The basic format for a class definition is:
+```cpp
+class MyClass : public OtherClass {
+public:      
+  MyClass();  // 2 space indent.
+  explicit MyClass(int var);
+  ~MyClass() {}
+
+  void SomeFunction();
+  void SomeFunctionThatDoesNothing() {
+  }
+
+  void set_some_var(int var) { some_var_ = var; }
+  int some_var() const { return some_var_; }
+
+private:
+  bool SomeInternalFunction();
+
+  int some_var_;
+  int some_other_var_;
+};
+```
+Things to note:
+
+- Any base class name should be on the same line as the subclass name, subject to the 80-column limit.
+- The ```public:```, ```protected:```, and ```private:``` keywords should not be indented.
+- Except for the first instance, these keywords should be preceded by a blank line. This rule is optional in small classes.
+- Do not leave a blank line after these keywords.
+- The public section should be first, followed by the protected and finally the private section.
+
+### Namespace Formatting
+Namespaces do not add an extra level of indentation. For example, use:
+```cpp
+namespace {
+
+void foo() {  // Correct.  No extra indentation within namespace.
+  ...
+}
+
+}  // namespace
+```
+
+### Horizontal Whitespace
+
+#### general
+```cpp
+int i = 0;  // Two spaces before end-of-line comments.
+
+void f(bool b) {  // Open braces should always have a space before them.
+  ...
+int i = 0;  // Semicolons usually have no space before them.
+// Spaces inside braces for braced-init-list are optional.  If you use them,
+// put them on both sides!
+int x[] = { 0 };
+int x[] = {0};
+
+// Spaces around the colon in inheritance and initializer lists.
+class Foo : public Bar {
+public:
+  // For inline function implementations, put spaces between the braces
+  // and the implementation itself.
+  Foo(int b) : Bar(), baz_(b) {}  // No spaces inside empty braces.
+  void Reset() { baz_ = 0; }  // Spaces separating braces from implementation.
+  ...
+```
+#### loops and conditionals
+```cpp
+if (b) {          // Space after the keyword in conditions and loops.
+} else {          // Spaces around else.
+}
+while (test) {}   // There is usually no space inside parentheses.
+switch (i) {
+for (int i = 0; i < 5; ++i) {
+// Loops and conditions may have spaces inside parentheses, but this
+// is rare.  Be consistent.
+switch ( i ) {
+if ( test ) {
+for ( int i = 0; i < 5; ++i ) {
+// For loops always have a space after the semicolon.  They may have a space
+// before the semicolon, but this is rare.
+for ( ; i < 5 ; ++i) {
+  ...
+
+// Range-based for loops always have a space before and after the colon.
+for (auto x : counts) {
+  ...
+}
+switch (i) {
+  case 1:         // No space before colon in a switch case.
+    ...
+  case 2: break;  // Use a space after a colon if there's code after it.
+```
+#### operators
+```cpp
+// Assignment operators always have spaces around them.
+x = 0;
+
+// Other binary operators usually have spaces around them, but it's
+// OK to remove spaces around factors.  Parentheses should have no
+// internal padding.
+v = w * x + y / z;
+v = w*x + y/z;
+v = w * (x + z);
+
+// No spaces separating unary operators and their arguments.
+x = -5;
+++x;
+if (x && !y)
+  ...
+```
+#### templates and casts 
+```cpp
+// No spaces inside the angle brackets (< and >), before
+// <, or between >( in a cast
+std::vector<std::string> x;
+y = static_cast<char*>(x);
+
+// Spaces between type and pointer are OK, but be consistent.
+std::vector<char *> x;
+```
+
+### Vertical Whitespace
+
+The basic principle is: The more code that fits on one screen, the easier it is to follow and understand the control flow of the program. Use whitespace purposefully to provide separation in that flow.
+
+Don't use blank lines when you don't have to. In particular, don't put more than one or two blank lines between functions, resist starting functions with a blank line, don't end functions with a blank line, and be sparing with your use of blank lines. A blank line within a block of code serves like a paragraph break in prose: visually separating two thoughts.
+
+Some rules of thumb to help when blank lines may be useful:
+
+- Blank lines at the beginning or end of a function do not help readability.
+- Blank lines inside a chain of if-else blocks may well help readability.
+- A blank line before a comment line usually helps readability — the introduction of a new comment suggests the start of a new thought, and the blank line makes it clear that the comment goes with the following thing instead of the preceding.
+- Blank lines immediately inside a declaration of a namespace or block of namespaces may help readability by visually separating the load-bearing content from the (largely non-semantic) organizational wrapper. Especially when the first declaration inside the namespace(s) is preceded by a comment, this becomes a special case of the previous rule, helping the comment to "attach" to the subsequent declaration.
+
+## Change tracking
+We have moved to git to track changes in the code.  It is no longer need to track changes at the top of every file like we did in the bad old days.  
+
+It is the responcibility of the developer to provide meaningful git commit messages and PR descriptions. 
 
 ## Doxogen/Sphynix <a name="auto-docs"></a>
 Look you doxogen hooks/format
@@ -288,6 +496,13 @@ Look you doxogen hooks/format
 ## Cmake <a name="cmake"></a>
 Probably don't need this.
 
+## Legacy Code (non-conformant code) <a name="legacycode"></a>
+
+G4CMP was inially developed without the above guide.  While there was there was some effort to include the style decision of the orginal developers in this guide it is expected that portions of this code base are non-conformant.  
+
+While maintaining this legacy code, judicious use of reformating may be appropriate for easy of readability and maintance in the future...
+
+...but, **when in doubt leave it alone!** 
 
 ## Notes <a name="notes"></a>
-This guide was cherry-picked from the [Google C++](https://google.github.io/styleguide/cppguide.html) and [LLVM](https://llvm.org/docs/CodingStandards.html) style guides or taken from the choices of the orginal developers.
+This guide was cherry-picked from the [Google C++](https://google.github.io/styleguide/cppguide.html) and [LLVM](https://llvm.org/docs/CodingStandards.html) style guides and much of it is copied directly so credit is given to them.  Effort was made to merge with the choices of the orginal developers where appropriate. 
