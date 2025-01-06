@@ -4,8 +4,8 @@
 1. [Naming](#naming)
 1. [Header Files](#headers)
 1. [Formatting](#formatting)
+1. [Comments](#comments)
 1. [Units](#units)
-1. [Doxogen/Sphyinx/Auto Docs](#auto-docs)
 1. [CMake File](#cmake)
 1. [Legacy Code](#legacycode)
 1. [Notes](#notes)
@@ -485,13 +485,27 @@ Some rules of thumb to help when blank lines may be useful:
 - A blank line before a comment line usually helps readability — the introduction of a new comment suggests the start of a new thought, and the blank line makes it clear that the comment goes with the following thing instead of the preceding.
 - Blank lines immediately inside a declaration of a namespace or block of namespaces may help readability by visually separating the load-bearing content from the (largely non-semantic) organizational wrapper. Especially when the first declaration inside the namespace(s) is preceded by a comment, this becomes a special case of the previous rule, helping the comment to "attach" to the subsequent declaration.
 
-## Change tracking
+## Comments <a name="comments"></a>
+### Change tracking
 We have moved to git to track changes in the code.  It is no longer need to track changes at the top of every file like we did in the bad old days.  
 
 It is the responcibility of the developer to provide meaningful git commit messages and PR descriptions. 
 
-## Doxogen/Sphynix <a name="auto-docs"></a>
+### Doxogen/Sphynix 
 Look you doxogen hooks/format
+
+## Units  <a name="units"></a>
+Need to says something here about CGS and CLHEP units.  The native unit of Geant4 are cm, g, and s.  Often times these are less than convient for our development work.  It is strongly encouraged to use CLHEP units to explicitly define your units.
+
+```cpp
+#include "CLHEP/Units/SystemOfUnits.h"
+
+// unit examples
+double foo_microns = 100 * CLHEP::um;
+double foo_mm = 200 * CLHEP::mm;
+...
+```
+
 
 ## Cmake <a name="cmake"></a>
 Probably don't need this.
