@@ -495,8 +495,7 @@ It is the responcibility of the developer to provide meaningful git commit messa
 Look you doxogen hooks/format
 
 ## Units  <a name="units"></a>
-Need to says something here about CGS and CLHEP units.  The native unit of Geant4 are cm, g, and s.  Often times these are less than convient for our development work.  It is strongly encouraged to use CLHEP units to explicitly define your units.
-
+The native unit of Geant4 are cm, g, and s.  Often times these are less than convient for our development work.  It is strongly encouraged to use CLHEP units to explicitly define your units.  Even when using cgs units, explicityly defining them can reduce errors and enhance readability. 
 ```cpp
 #include "CLHEP/Units/SystemOfUnits.h"
 
@@ -505,7 +504,7 @@ double foo_microns = 100 * CLHEP::um;
 double foo_mm = 200 * CLHEP::mm;
 ...
 ```
-
+_Any other ideas to include here?_  
 
 ## Cmake <a name="cmake"></a>
 Probably don't need this.
@@ -519,4 +518,4 @@ While maintaining this legacy code, judicious use of reformating may be appropri
 ...but, **when in doubt leave it alone!** 
 
 ## Notes <a name="notes"></a>
-This guide was cherry-picked from the [Google C++](https://google.github.io/styleguide/cppguide.html) and [LLVM](https://llvm.org/docs/CodingStandards.html) style guides and much of it is copied directly so credit is given to them.  Effort was made to merge with the choices of the orginal developers where appropriate. 
+This guide was cherry-picked from the [Google C++](https://google.github.io/styleguide/cppguide.html) and [LLVM](https://llvm.org/docs/CodingStandards.html) style guides and much of it is copied directly so credit is given to them.  Effort was made to merge with the choices of the orginal developers where appropriate.  
