@@ -6,7 +6,6 @@
 1. [Formatting](#formatting)
 1. [Comments](#comments)
 1. [Units](#units)
-1. [CMake File](#cmake)
 1. [Legacy Code](#legacycode)
 1. [Notes](#notes)
 
@@ -486,28 +485,131 @@ Some rules of thumb to help when blank lines may be useful:
 - Blank lines immediately inside a declaration of a namespace or block of namespaces may help readability by visually separating the load-bearing content from the (largely non-semantic) organizational wrapper. Especially when the first declaration inside the namespace(s) is preceded by a comment, this becomes a special case of the previous rule, helping the comment to "attach" to the subsequent declaration.
 
 ## Comments <a name="comments"></a>
+Comments are absolutely vital to keeping our code readable. The following rules describe what you should comment and where. But remember: while comments are very important, the best code is self-documenting. Giving sensible names to types and variables is much better than using obscure names that you must then explain through comments.
+
+When writing your comments, write for your audience: the next contributor who will need to understand your code. Be generous — the next one may be you!
+
+### Comment Formatting
+In general, prefer C++-style comments (// for normal comments, /// for doxygen documentation comments). There are a few cases when it is useful to use C-style (/* */) comments however:
+
+When writing C code to be compatible with C89.
+
+When writing a header file that may be #included by a C source file.
+
+When writing a source file that is used by a tool that only accepts C-style comments.
+
+When documenting the significance of constants used as actual parameters in a call. This is most helpful for bool parameters, or passing 0 or nullptr. The comment should contain the parameter name, which ought to be meaningful. For example, it’s not clear what the parameter means in this call:
+
+Object.emitName(nullptr);
+An in-line C-style comment makes the intent obvious:
+
+Object.emitName(/*Prefix=*/nullptr);
+Commenting out large blocks of code is discouraged, but if you really have to do this (for documentation purposes or as a suggestion for debug printing), use #if 0 and #endif. These nest properly and are better behaved in general than C style comments.
+
+### License
+Each file should have the below license statement:
+```cpp
+/***********************************************************************\
+ * This software is licensed under the terms of the GNU General Public *
+ * License version 3 or later. See G4CMP/LICENSE for the full license. *
+\***********************************************************************/
+```
 ### Change tracking
 We have moved to git to track changes in the code.  It is no longer need to track changes at the top of every file like we did in the bad old days.  
 
 It is the responcibility of the developer to provide meaningful git commit messages and PR descriptions. 
 
-### Doxogen/Sphynix 
-Look you doxogen hooks/format
+Further information about change tracking can be found in the repository's CONTRIBUTTING.md.
+
+### Doxogen
+We would like to start making more use of Doxogen to auto generate documentation.
+
+Use the \file command to turn the standard file header into a file-level comment.
+
+Include descriptive paragraphs for all public interfaces (public classes, member and non-member functions). Avoid restating the information that can be inferred from the API name. The first sentence (or a paragraph beginning with \brief) is used as an abstract. Try to use a single sentence as the \brief adds visual clutter. Put detailed discussion into separate paragraphs.
+
+To refer to parameter names inside a paragraph, use the \p name command. Don’t use the \arg name command since it starts a new paragraph that contains documentation for the parameter.
+
+Wrap non-inline code examples in \code ... \endcode.
+
+To document a function parameter, start a new paragraph with the \param name command. If the parameter is used as an out or an in/out parameter, use the \param [out] name or \param [in,out] name command, respectively.
+
+To describe function return value, start a new paragraph with the \returns command.
+
+A minimal documentation comment:
+
+```cpp
+/// Sets the xyzzy property to \p Baz.
+void setXyzzy(bool Baz);
+```
+
+A documentation comment that uses all Doxygen features in a preferred way:
+```cpp
+/// Does foo and bar.
+///
+/// Does not do foo the usual way if \p Baz is true.
+///
+/// Typical usage:
+/// \code
+///   fooBar(false, "quux", Res);
+/// \endcode
+///
+/// \param Quux kind of foo to do.
+/// \param [out] Result filled with bar sequence on foo success.
+///
+/// \returns true on success.
+bool fooBar(bool Baz, StringRef Quux, std::vector<int> &Result);
+```
+Don’t duplicate the documentation comment in the header file and in the implementation file. Put the documentation comments for public APIs into the header file. Documentation comments for private APIs can go to the implementation file. In any case, implementation files can include additional comments (not necessarily in Doxygen markup) to explain implementation details as needed.
+
+Don’t duplicate function or class name at the beginning of the comment. For humans it is obvious which function or class is being documented; automatic documentation processing tools are smart enough to bind the comment to the correct declaration.
+
+Avoid:
+
+```cpp
+// Example.h:
+
+// example - Does something important.
+void example();
+
+// Example.cpp:
+
+// example - Does something important.
+void example() { ... }
+```
+
+Preferred:
+
+```cpp
+// Example.h:
+
+/// Does something important.
+void example();
+
+// Example.cpp:
+
+/// Builds a B-tree in order to do foo.  See paper by...
+void example() { ... }
+```
+
+
+## Error/Warning/Info Messages
+_This section is very important and needs more work_
+
+
 
 ## Units  <a name="units"></a>
-The native unit of Geant4 are cm, g, and s.  Often times these are less than convient for our development work.  It is strongly encouraged to use CLHEP units to explicitly define your units.  Even when using cgs units, explicityly defining them can reduce errors and enhance readability. 
+The native unit of Geant4 (and hence G4CMP) are cm, g, and s.  Often times these are less than convient for our development work.  It is strongly encouraged to use CLHEP units available via ```G4SystemOfUnits.hh``` to explicitly define your units.  Even when using cgs units, explicitly defining them can reduce errors and enhance readability. 
 ```cpp
-#include "CLHEP/Units/SystemOfUnits.h"
+#include "G4SystemOfUnits.hh"
 
 // unit examples
-double foo_microns = 100 * CLHEP::um;
-double foo_mm = 200 * CLHEP::mm;
+double fooMicrons = 100 * um;
+double fooCm = 200 * cm;
 ...
 ```
 _Any other ideas to include here?_  
 
-## Cmake <a name="cmake"></a>
-Probably don't need this.
 
 ## Legacy Code (non-conformant code) <a name="legacycode"></a>
 
