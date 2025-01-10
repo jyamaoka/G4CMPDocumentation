@@ -2,6 +2,7 @@
 
 # Table of Contents
 1. [Naming](#naming)
+1. [Class Files](#class)
 1. [Header Files](#headers)
 1. [Formatting](#formatting)
 1. [Comments](#comments)
@@ -10,15 +11,18 @@
 1. [Notes](#notes)
 
 ## Naming <a name="naming"></a>
+Poorly-chosen names can mislead the reader and cause bugs. We cannot stress enough how important it is to use descriptive names. Pick names that match the semantics and role of the underlying entities, within reason. Avoid abbreviations unless they are well known (Do not abbreviate by deleting letters within a word). After picking a good name, make sure to use consistent capitalization for the name, as inconsistency requires clients to either memorize the APIs or to look it up to find the exact spelling. 
 ### Classes
-Classes that are part of the main libary should use our modified UpperCamelCase style of "G4CMPFooBar"*.  
+Classes that are part of the main libary should use our modified UpperCamelCase style of "G4CMPFooBar"*.  One exception to this rule is when dealing with well known abbreviations, for example: ```class G4CMPLewinSmithNIEL```
+
 
 Classes that are a not a part of the main libary, i.e. examples, tests, and validation, should use UpperCamelCase but not the "G4CMP" prefix as to not confuse new users.    
 
 *_Very early utility classes, in particular the code that handles the config.txt files (like G4LatticeLogical, etc.), and the phonon particle types, have the plain "G4" prefix.  In fact, there are versions of those classes in the G4 library.  If we change the names in G4CMP, then the G4 version will be "exposed" and confuse builds._
 
-### Files
-There should usually be one class per .cc file that follows the naming convention above.  See also [Header Files](#headers).  
+
+## Class Files <a name="class"></a>
+There should usually be one class per .cc file that follows the class naming convention above.
 
 ## Header Files <a name="headers"></a>
 In general, every .cc file should have an associated .hh file. There are some common exceptions, such as unit tests or macros and small .cc files containing just a main() function.
@@ -154,7 +158,7 @@ We use spaces for indentation. Do not use tabs in your code. You should set your
 
 Functions look like this:
 ```cpp
-ReturnType ClassName::FunctionName(Type par_name1, Type par_name2) {
+ReturnType ClassName::FunctionName(Type parName1, Type parName2) {
   DoSomething();
   ...
 }
@@ -162,8 +166,8 @@ ReturnType ClassName::FunctionName(Type par_name1, Type par_name2) {
 
 If you have too much text to fit on one line:
 ```cpp
-ReturnType ClassName::ReallyLongFunctionName(Type par_name1, Type par_name2,
-                                             Type par_name3) {
+ReturnType ClassName::ReallyLongFunctionName(Type parName1, Type parName2,
+                                             Type parName3) {
   DoSomething();
   ...
 }
@@ -172,9 +176,9 @@ ReturnType ClassName::ReallyLongFunctionName(Type par_name1, Type par_name2,
 or if you cannot fit even the first parameter:
 ```cpp
 ReturnType LongClassName::ReallyReallyReallyLongFunctionName(
-    Type par_name1,  // 4 space indent
-    Type par_name2,
-    Type par_name3) {
+    Type parName1,  // 4 space indent
+    Type parName2,
+    Type parName3) {
   DoSomething();  // 2 space indent
   ...
 }
@@ -221,7 +225,7 @@ bool result = DoSomething(argument1, argument2, argument3);
 ```
 
 ```cpp
-bool result = DoSomething(averyveryveryverylongargument1,
+bool result = DoSomething(aVeryVeryVeryVeryLongArgument1,
                           argument2, argument3);
 ```
 
@@ -317,9 +321,9 @@ When you have a boolean expression that is longer than the standard line length,
 
 In this example, the logical AND operator is always at the end of the lines:
 ```cpp
-if (this_one_thing > this_other_thing &&
-    a_third_thing == a_fourth_thing &&
-    yet_another && last_one) {
+if (thisOneThing > thisOtherThing &&
+    aThirdThing == aFourthThing &&
+    yetAnother && lastOne) {
   ...
 }
 ```
@@ -335,7 +339,7 @@ Even when preprocessor directives are within the body of indented code, the dire
 
 ```cpp
 // Good - directives at beginning of line
-  if (lopsided_score) {
+  if (lopsidedScore) {
 #if DISASTER_PENDING      // Correct -- Starts at beginning of line
     DropEverything();
 # if NOTIFY               // OK but not required -- Spaces after #
@@ -362,14 +366,14 @@ public:
   void SomeFunctionThatDoesNothing() {
   }
 
-  void set_some_var(int var) { some_var_ = var; }
-  int some_var() const { return some_var_; }
+  void SetSomeVar(int var) { someVar = var; }
+  int SomeVar() const { return someVar; }
 
 private:
   bool SomeInternalFunction();
 
-  int some_var_;
-  int some_other_var_;
+  int someVar;
+  int someOtherVar;
 };
 ```
 Things to note:
@@ -385,7 +389,7 @@ Namespaces do not add an extra level of indentation. For example, use:
 ```cpp
 namespace {
 
-void foo() {  // Correct.  No extra indentation within namespace.
+void Foo() {  // Correct.  No extra indentation within namespace.
   ...
 }
 
@@ -398,7 +402,7 @@ void foo() {  // Correct.  No extra indentation within namespace.
 ```cpp
 int i = 0;  // Two spaces before end-of-line comments.
 
-void f(bool b) {  // Open braces should always have a space before them.
+void F(bool b) {  // Open braces should always have a space before them.
   ...
 int i = 0;  // Semicolons usually have no space before them.
 // Spaces inside braces for braced-init-list are optional.  If you use them,
@@ -411,8 +415,8 @@ class Foo : public Bar {
 public:
   // For inline function implementations, put spaces between the braces
   // and the implementation itself.
-  Foo(int b) : Bar(), baz_(b) {}  // No spaces inside empty braces.
-  void Reset() { baz_ = 0; }  // Spaces separating braces from implementation.
+  Foo(int b) : Bar(), baz(b) {}  // No spaces inside empty braces.
+  void Reset() { baz = 0; }  // Spaces separating braces from implementation.
   ...
 ```
 #### loops and conditionals
@@ -428,9 +432,6 @@ for (int i = 0; i < 5; ++i) {
 switch ( i ) {
 if ( test ) {
 for ( int i = 0; i < 5; ++i ) {
-// For loops always have a space after the semicolon.  They may have a space
-// before the semicolon, but this is rare.
-for ( ; i < 5 ; ++i) {
   ...
 
 // Range-based for loops always have a space before and after the colon.
@@ -547,18 +548,18 @@ A documentation comment that uses all Doxygen features in a preferred way:
 ```cpp
 /// Does foo and bar.
 ///
-/// Does not do foo the usual way if \p Baz is true.
+/// Does not do foo the usual way if \p baz is true.
 ///
 /// Typical usage:
 /// \code
-///   fooBar(false, "quux", Res);
+///   FooBar(false, "quux", Res);
 /// \endcode
 ///
-/// \param Quux kind of foo to do.
-/// \param [out] Result filled with bar sequence on foo success.
+/// \param quux kind of foo to do.
+/// \param [out] result filled with bar sequence on foo success.
 ///
 /// \returns true on success.
-bool fooBar(bool Baz, StringRef Quux, std::vector<int> &Result);
+bool FooBar(bool baz, StringRef quux, std::vector<int> &result);
 ```
 Don’t duplicate the documentation comment in the header file and in the implementation file. Put the documentation comments for public APIs into the header file. Documentation comments for private APIs can go to the implementation file. In any case, implementation files can include additional comments (not necessarily in Doxygen markup) to explain implementation details as needed.
 
@@ -569,13 +570,13 @@ Avoid:
 ```cpp
 // Example.h:
 
-// example - Does something important.
-void example();
+// Example - Does something important.
+void Example();
 
 // Example.cpp:
 
-// example - Does something important.
-void example() { ... }
+// Example - Does something important.
+void Example() { ... }
 ```
 
 Preferred:
@@ -584,12 +585,12 @@ Preferred:
 // Example.h:
 
 /// Does something important.
-void example();
+void Example();
 
 // Example.cpp:
 
 /// Builds a B-tree in order to do foo.  See paper by...
-void example() { ... }
+void Example() { ... }
 ```
 
 
@@ -599,21 +600,20 @@ _This section is very important and needs more work_
 
 
 ## Units  <a name="units"></a>
-The native unit of Geant4 (and hence G4CMP) are cm, g, and s.  Often times these are less than convient for our development work.  It is strongly encouraged to use CLHEP units available via ```G4SystemOfUnits.hh``` to explicitly define your units.  Even when using cgs units, explicitly defining them can reduce errors and enhance readability. 
+The native unit of Geant4 (and hence G4CMP) are cm, g, and s.  Often times these are less convient for our development work.  It is strongly encouraged to use CLHEP units available via ```G4SystemOfUnits.hh``` to explicitly define your units.  Even when using cgs units, explicitly defining them can reduce errors and enhance readability. 
 ```cpp
 #include "G4SystemOfUnits.hh"
 
 // unit examples
 double fooMicrons = 100 * um;
-double fooCm = 200 * cm;
+double barCm = 200 * cm;
 ...
-```
-_Any other ideas to include here?_  
+``` 
 
 
 ## Legacy Code (non-conformant code) <a name="legacycode"></a>
 
-G4CMP was inially developed without the above guide.  While there was there was some effort to include the style decision of the orginal developers in this guide it is expected that portions of this code base are non-conformant.  
+G4CMP was inially developed without the above guide.  While there was some effort to include the style decision of the orginal developers in this guide it is expected that portions of this code base are non-conformant.  
 
 While maintaining this legacy code, judicious use of reformating may be appropriate for easy of readability and maintance in the future...
 
