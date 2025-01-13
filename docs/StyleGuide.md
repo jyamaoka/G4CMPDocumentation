@@ -26,12 +26,9 @@ Function names should be verb phrases (as they represent actions), and command-l
 ### Common Variable Names
 Variables (including function parameters) should be nouns (as they represent state). The name should be lowerCamelCase (e.g. version or tableName). 
 
-One exception to this rule can be local variables with limited use/scope of say a few lines. 
+One exception to this rule can be variables with limited use/scope of say a few lines. 
 ```cpp
-for (int i = 0; i != 3){  // OK.  Counters go out of scope
-  DoSomething(i);
-  ...
-}
+void SetVerboseLevel(G4int vb) { verboseLevel = vb; } // vb is OK variable name here
 ```  
 
 ### Class Data Members
@@ -525,21 +522,34 @@ Comments are absolutely vital to keeping our code readable. The following rules 
 When writing your comments, write for your audience: the next contributor who will need to understand your code. Be generous — the next one may be you!
 
 ### Comment Formatting
-In general, prefer C++-style comments (// for normal comments, /// for doxygen documentation comments). There are a few cases when it is useful to use C-style (/* */) comments however:
+In general, prefer C++-style comments (// for normal comments, /// for doxygen documentation comments). 
 
-When writing C code to be compatible with C89.
+There are a few cases when it is useful to use C-style (/* */) comments however:
+- When documenting the significance of constants used as actual parameters in a call. This is most helpful for bool parameters, or passing 0 or nullptr. The comment should contain the parameter name, which ought to be meaningful. For example, it’s not clear what the parameter means in this call:
+   
+   ```Object.emitName(nullptr);```
 
-When writing a header file that may be #included by a C source file.
+    An in-line C-style comment makes the intent obvious:
 
-When writing a source file that is used by a tool that only accepts C-style comments.
+   ```Object.emitName(/*Prefix=*/nullptr);```
 
-When documenting the significance of constants used as actual parameters in a call. This is most helpful for bool parameters, or passing 0 or nullptr. The comment should contain the parameter name, which ought to be meaningful. For example, it’s not clear what the parameter means in this call:
+- Our license statement uses C-style (see below).
 
-Object.emitName(nullptr);
-An in-line C-style comment makes the intent obvious:
-
-Object.emitName(/*Prefix=*/nullptr);
 Commenting out large blocks of code is discouraged, but if you really have to do this (for documentation purposes or as a suggestion for debug printing), use #if 0 and #endif. These nest properly and are better behaved in general than C style comments.
+
+Avoid using "flowery" ascii patterns. Below are a few examples of what not to do. 
+```cpp
+//*********************** // Bad
+DoSomething();
+
+//---------------------- // Bad
+DoSomethingElse();
+
+//////////////////////// // Bad
+// my really important comment // OK if by itself 
+/////////////////////// // Bad  
+DoAnything();
+```
 
 ### License
 Each file should have the below license statement:
@@ -554,7 +564,7 @@ We have moved to git to track changes in the code.  It is no longer need to trac
 
 It is the responcibility of the developer to provide meaningful git commit messages and PR descriptions. 
 
-Further information about change tracking can be found in the repository's CONTRIBUTTING.md.
+Further information about change tracking can be found in the repository's CONTRIBUTING.md.
 
 ### Doxogen
 We would like to start making more use of Doxogen to auto generate documentation.
@@ -628,10 +638,51 @@ void Example() { ... }
 ```
 
 
-## Error/Warning/Info Messages
-_This section is very important and needs more work_
+## Logging and Error Messages
+_This section is very important and probably needs more work_
 
+Every class should have a method (or virtual method) to pass the logging level onto your class.
 
+For example:
+```cpp
+class G4CMPChargeCloud {
+public:
+  ...
+  // Configure for logging
+  void SetVerboseLevel(G4int vb) { verboseLevel = vb; }
+  G4int GetVerboseLevel() const { return verboseLevel; }
+  ...
+
+protected:
+  G4int verboseLevel;	// Diagnostic messages
+  ...
+```
+
+There are 4 levels of verbosity:
+- 0: No logging
+- 1: High level logging
+- 2: More detaled logging
+- 3: Debuging information
+
+For exammple:
+```cpp
+if (verboseLevel>2) { // Debug: i.e. verboseLevel = 3
+  G4cout << " my debug statement " << importantVar << G4endl;
+}
+```
+
+Error messages can be passed to the Geant4 error messaging with ```G4cerr``` which is included in ```globals.hh```.
+```cpp
+#include "globals.hh"
+...
+if (!TInvGood[itet]) {
+  G4cerr << "ERROR: Non-invertible matrix " << itet << " with " << G4endl;
+  for (G4int i = 0; i < 3; i++) {
+    G4cerr << " " << tetra[i] << " @ " << X[tetra[i]] << G4endl;
+  }
+}
+...
+```
 
 ## Units  <a name="units"></a>
 The native unit of Geant4 (and hence G4CMP) are cm, g, and s.  Often times these are less convient for our development work.  It is strongly encouraged to use CLHEP units available via ```G4SystemOfUnits.hh``` to explicitly define your units.  Even when using cgs units, explicitly defining them can reduce errors and enhance readability. 
