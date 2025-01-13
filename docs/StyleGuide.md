@@ -2,7 +2,7 @@
 
 # Table of Contents
 1. [Naming](#naming)
-1. [Class Files](#class)
+1. [Class Source Files](#class)
 1. [Header Files](#headers)
 1. [Formatting](#formatting)
 1. [Comments](#comments)
@@ -20,6 +20,40 @@ Classes that are a not a part of the main libary, i.e. examples, tests, and vali
 
 *_Very early utility classes, in particular the code that handles the config.txt files (like G4LatticeLogical, etc.), and the phonon particle types, have the plain "G4" prefix.  In fact, there are versions of those classes in the G4 library.  If we change the names in G4CMP, then the G4 version will be "exposed" and confuse builds._
 
+### Functions
+Function names should be verb phrases (as they represent actions), and command-like function should be imperative. The name should be UpperCamelCase (e.g. OpenFile() or IsFoo()).
+
+### Common Variable Names
+Variables (including function parameters) should be nouns (as they represent state). The name should be lowerCamelCase (e.g. version or tableName). 
+
+One exception to this rule can be local variables with limited use/scope of say a few lines. 
+```cpp
+for (int i = 0; i != 3){  // OK.  Counters go out of scope
+  DoSomething(i);
+  ...
+}
+```  
+
+### Class Data Members
+Generally, class data members should be named like common vaiables (above).  New classes should follow this rule for class data members. 
+```cpp
+class TableInfo {
+  ...
+ private:
+  std::string tableName;  // Prefered for new code.
+  static Pool<TableInfo>* pool;  // Prefered for new code.
+};
+```
+
+The legacy nature of G4CMP complicates this.  Often in this code, class data members are prefixed with 'f', 'p', 'm', or 'k'.  This "Hungarian" notation can be confusing and is highly out of favor in current coding statndards.  However while maintaing code written with such vaiables be consistent with what is used.  
+```cpp
+class TableInfo {
+  ...
+ private:
+  std::string fTableName;  // OK for legacy code.
+  static Pool<TableInfo>* pPool;  // OK for legacy code.
+};
+```
 
 ## Class Files <a name="class"></a>
 There should usually be one class per .cc file that follows the class naming convention above.
@@ -202,18 +236,18 @@ The close curly brace is either on the last line by itself or on the same line a
 ### Floating-point Literals
 Floating-point literals should always have a radix point, with digits on both sides, even if they use exponential notation. Readability is improved if all floating-point literals take this familiar form, as this helps ensure that they are not mistaken for integer literals, and that the E/e of the exponential notation is not mistaken for a hexadecimal digit. It is fine to initialize a floating-point variable with an integer literal (assuming the variable type can exactly represent that integer), but note that a number in exponential notation is never an integer literal.
 ```cpp
-float f = 1.0f;
-float f2 = 1.0;  // Also OK
-float f3 = 1;    // Also OK
-long double ld = -0.5L;
-double d = 1248.0e6;
+float foo = 1.0f;
+float foo2 = 1.0;  // Also OK
+float foo3 = 1;    // Also OK
+long double bar = -0.5L;
+double bar2 = 1248.0e6;
 ```
 
 ```cpp
 // BAD EXAMPLES DON'T DO THIS!!!
-float f = 1.f;
-long double ld = -.5L;
-double d = 1248e6;
+float foo = 1.f;
+long double bar = -.5L;
+double bar2 = 1248e6;
 ```
 
 ### Function Calls
@@ -284,7 +318,7 @@ for (int i = 0; i < 10; ++i) {
 We allow one exception to the above rules: the line breaks inside the curly braces may be omitted if as a result the entire statement appears on a single line.
 ```cpp
 // OK - fits on one line.
-if (x == kFoo) { return new Foo(); }
+if (checkFoo == myFoo) { return new Foo(); }
 ```
 
 
@@ -302,14 +336,14 @@ x = r->y;
 When referring to a pointer or reference (variable declarations or definitions, arguments, return types, template parameters, etc), you may place the space before or after the asterisk/ampersand. In the trailing-space style, the space is elided in some cases (template parameters, etc).
 ```cpp
 // These are fine, space preceding.
-char *c;
-const std::string &str;
+char *myCharacters;
+const std::string &myString;
 int *GetPointer();
 std::vector<char *>
 
 // These are fine, space following (or elided).
-char* c;
-const std::string& str;
+char* myCharacters;
+const std::string& myString;
 int* GetPointer();
 std::vector<char*>  // Note no space between '*' and '>'
 ```
