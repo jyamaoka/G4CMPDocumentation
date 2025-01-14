@@ -666,7 +666,7 @@ protected:
 There are 4 levels of verbosity:
 - 0: No logging
 - 1: High level logging
-- 2: More detaled logging
+- 2: More detailed logging
 - 3: Debuging information
 
 For exammple:
