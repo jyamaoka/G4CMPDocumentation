@@ -6,6 +6,7 @@
 1. [Header Files](#headers)
 1. [Formatting](#formatting)
 1. [Comments](#comments)
+1. [Logging and Error Messages](#logging)
 1. [Units](#units)
 1. [Legacy Code](#legacycode)
 1. [Notes](#notes)
@@ -643,7 +644,7 @@ void Example() { ... }
 ```
 
 
-## Logging and Error Messages
+## Logging and Error Messages <a name="logging"></a>
 _This section is very important and probably needs more work_
 
 Every class should have a method (or virtual method) to pass the logging level onto your class.
