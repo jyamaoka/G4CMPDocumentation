@@ -569,9 +569,16 @@ Further information about change tracking can be found in the repository's CONTR
 ### Doxogen
 We would like to start making more use of Doxogen to auto generate documentation.
 
-Use the \file command to turn the standard file header into a file-level comment.
+#### File Header Comments
+At the top of every file, use the \file command to turn the standard file header into a file-level comment.  The main body is a Doxygen comment (identified by the /// comment marker instead of the usual //) describing the purpose of the file. The first sentence (or a passage beginning with \brief) is used as an abstract.
+```cpp
+/// \file library/include/G4CMPChargeCloud.hh
+/// \brief Definition of the G4CMPChargeCloud class
+///   Generates a collection of points distributed...
+```
 
-Include descriptive paragraphs for all public interfaces (public classes, member and non-member functions). Avoid restating the information that can be inferred from the API name. The first sentence (or a paragraph beginning with \brief) is used as an abstract. Try to use a single sentence as the \brief adds visual clutter. Put detailed discussion into separate paragraphs.
+#### Inline Comments
+Include descriptive paragraphs for all public interfaces (public classes, member and non-member functions). Avoid restating the information that can be inferred from the API name. Every non-trivial class should have a doxogen comment block that explains what the class is used for and how it works. 
 
 To refer to parameter names inside a paragraph, use the \p name command. Don’t use the \arg name command since it starts a new paragraph that contains documentation for the parameter.
 
@@ -585,7 +592,7 @@ A minimal documentation comment:
 
 ```cpp
 /// Sets the xyzzy property to \p Baz.
-void setXyzzy(bool Baz);
+void SetXyzzy(bool Baz);
 ```
 
 A documentation comment that uses all Doxygen features in a preferred way:
