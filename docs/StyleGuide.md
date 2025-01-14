@@ -36,7 +36,7 @@ Generally, class data members should be named like common vaiables (above).  New
 ```cpp
 class TableInfo {
   ...
- private:
+private:
   std::string tableName;  // Prefered for new code.
   static Pool<TableInfo>* pool;  // Prefered for new code.
 };
@@ -46,7 +46,7 @@ The legacy nature of G4CMP complicates this.  Often in this code, class data mem
 ```cpp
 class TableInfo {
   ...
- private:
+private:
   std::string fTableName;  // OK for legacy code.
   static Pool<TableInfo>* pPool;  // OK for legacy code.
 };
@@ -383,8 +383,6 @@ Even when preprocessor directives are within the body of indented code, the dire
 
 ### Class Format
 
-Sections in ```public```, ```protected``` and ```private``` are not indented.
-
 The basic format for a class definition is:
 ```cpp
 class MyClass : public OtherClass {
@@ -567,7 +565,7 @@ It is the responcibility of the developer to provide meaningful git commit messa
 Further information about change tracking can be found in the repository's CONTRIBUTING.md.
 
 ### Doxogen
-We would like to start making more use of Doxogen to auto generate documentation.
+We would like to start making more use of Doxogen to auto generate documentation.  There are a lot of standards described below, and the more you comment your code the more usefull it will be.  We ask you to, atleast, include file header comments described below, 
 
 #### File Header Comments
 At the top of every file, use the \file command to turn the standard file header into a file-level comment.  The main body is a Doxygen comment (identified by the /// comment marker instead of the usual //) describing the purpose of the file. The first sentence (or a passage beginning with \brief) is used as an abstract.
