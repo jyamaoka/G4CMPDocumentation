@@ -37,7 +37,7 @@ and confuse builds._
 
 ### Functions
 Function names should be verb phrases (as they represent actions), and 
-command-like function should be imperative. The name should be UpperCamelCase 
+command-like functions should be imperative. The name should be UpperCamelCase 
 (e.g. OpenFile() or IsFoo()).
 
 ### Common Variable Names
@@ -52,8 +52,8 @@ void SetVerboseLevel(G4int vb) { verboseLevel = vb; } // vb is OK variable name 
 ```  
 
 ### Class Data Members
-Generally, class data members should be named like common vaiables (above).  
-New classes should follow this rule for class data members. 
+Generally, class data members should be named like common vaiables (above). New 
+classes should follow this rule for class data members. 
 ```cpp
 class TableInfo {
   ...
@@ -64,9 +64,10 @@ private:
 ```
 
 The legacy nature of G4CMP complicates this.  Often in this code, class data 
-members are prefixed with 'f', 'p', 'm', or 'k'.  This "Hungarian" notation can 
-be confusing and is highly out of favor in current coding statndards.  However 
-while maintaing code written with such vaiables be consistent with what is used.  
+members are prefixed with 'f', 'p', 'm', or 'k' to identify the type.  This 
+"Hungarian" notation can be confusing and is highly out of favor in current 
+coding statndards.  However while maintaing code written with such vaiables be 
+consistent with what is used.  
 ```cpp
 class TableInfo {
   ...
@@ -75,6 +76,11 @@ private:
   static Pool<TableInfo>* pPool;  // OK for legacy code.
 };
 ```
+_Note: In some of our code 'f' is used generically for class members reguardless 
+of type.  This is another practice that can lead to confusing code.  Many style 
+guides require trailing '\_' to identify class data member variables, but as 
+this is not used anywhere in our current code base we choose not to do this._
+
 
 ## Class Files <a name="class"></a>
 There should usually be one class per .cc file that follows the class naming 
@@ -96,60 +102,84 @@ Header files should be self-contained (compile on their own) and end in .hh.
 Non-header files that are meant for inclusion should end in .icc and be used 
 sparingly.
 
+The main use, and required use, of .icc files is with templated classes. 
+Compilers (both GCC and LLVM/Clang) require that function implementations be 
+provided in the .hh file of a templated class. The compiler uses that source to 
+generate the template-argument implementations during compilation.
+
 There are rare cases where a file designed to be included is not self-contained. 
 These are typically intended to be included at unusual locations, such as the 
 middle of another file. They might not use header guards, and might not include 
 their prerequisites. Name such files with the .icc extension. Use sparingly, and 
 prefer self-contained headers when possible.
 
+More about [inline functions](#inline) is discussed below.
+
 ### The #define Guard
 All header files should have #define guards to prevent multiple inclusion.
 
 ```cpp
-#ifndef FOO_BAR_BAZ_HH
-#define FOO_BAR_BAZ_HH 1
+#ifndef G4CMPUtils_hh
+#define G4CMPUtils_hh 1
 
 ...
 
-#endif  // FOO_BAR_BAZ_HH
+#endif  /* G4CMPUtils_hh */
 ```
 
 ### Include Headers Judiciously
 #include hurts compile time performance. Don’t do it unless you have to, 
 especially in header files.
 
-[If a source or header file refers to a symbol defined elsewhere, the file 
+If a source or header file refers to a symbol defined elsewhere, the file 
 should directly include a header file which properly intends to provide a 
 declaration or definition of that symbol. It should not include header files 
-for any other reason.]: (comment)
+for any other reason.
+
+- If the A.hh class definition uses an object of type B as a data member, or a pass-by-value function argument, then A.hh must have #include B.hh. In this 
+case, the compiler needs to know the memory layout of B in order to determine 
+the layout of A.
+- If B is an enumerator (either a value or the typename), or a typedef rather 
+than a defined class (the best example here is G4ThreeVector), then A.hh must 
+have #include B.hh.
+- Any other use of B, including pointers, pass-by-reference function arguments, 
+and return values, should be forward declared.
 
 However, you must include all of the header files that you are using. It is 
 recommended not to rely on transitive inclusions. This allows people to remove 
-no-longer-needed #include statements from their headers without breaking clients.
+no-longer-needed #include statements from their headers without breaking 
+clients.
 
 [### Forward Declarations
 Avoid using forward declarations where possible. Instead, include the headers 
 you need.]: (comment)
 
 
-### Inline Functions
+### Inline Functions <a name="inline"></a>
 
 You can declare functions in a way that allows the compiler to expand them 
 inline rather than calling them through the usual function call mechanism.
 
 Inlining a function can generate more efficient object code, as long as the 
-inlined function is small. Feel free to inline accessors and mutators, and other 
-short, performance-critical functions. Overuse of inlining can actually make 
+inlined function is small. Overuse of inlining can actually make 
 programs slower. Depending on a function's size, inlining it can cause the code 
 size to increase or decrease.
 
-A decent rule of thumb is to not inline a function if it is more than 10 lines 
+[A decent rule of thumb is to not inline a function if it is more than 10 lines 
 long. Beware of destructors, which are often longer than they appear because of 
 implicit member- and base-destructor calls!
-
 Another useful rule of thumb: it's typically not cost effective to inline 
 functions with loops or switch statements (unless, in the common case, the loop 
-or switch statement is never executed).
+or switch statement is never executed).]: (comment)
+
+Except for very short code (e.g., one-line SetXYZ() functions), G4CMP does not 
+have function implementations in the .hh file at all. Long implementations 
+generally cannot be inlined anyway, so there's no point to having them in the 
+.hh file.
+
+One exception are the stream-output functions that call to a Print(std::ostream&) 
+or Dump(std:ostream&) method; those are trivial enough that they can be inlined, 
+and deserve to be.
 
 ### Names and Order of Includes
 Include headers in the following order: G4CMP headers, G4 headers, other 
@@ -159,8 +189,8 @@ then your project's headers.
 Headers should only be included using an angle-bracketed path if the library 
 requires you to do so. In particular, the following headers require angle 
 brackets:
-
-- C and C++ standard library headers (e.g. <stdlib.h> and <string>).
+- Don't include ```global.hh```<a name="globnote"></a>
+- C and C++ standard library headers (e.g. <stdlib.h> and \<string>).
 - POSIX, Linux, and Windows system headers (e.g. <unistd.h> and <windows.h>).
 - In rare cases, third_party libraries (e.g. <Python.h>).
 
@@ -176,8 +206,8 @@ G4CMPFoo2.hh, order your includes as follows:
 1. C system headers, and any other headers in angle brackets with the .h 
 extension, e.g., <unistd.h>, <stdlib.h>, <Python.h>
 1. A blank line
-1. C++ standard library headers (without file extension), e.g., <algorithm>, 
-<cstddef>
+1. C++ standard library headers (without file extension), e.g., \<algorithm>, 
+\<cstddef>
 1. A blank line
 1. Your project's .hh files
 
@@ -279,10 +309,9 @@ ReturnType ClassName::ReallyLongFunctionName(Type parName1, Type parName2,
 
 or if you cannot fit even the first parameter:
 ```cpp
-ReturnType LongClassName::ReallyReallyReallyLongFunctionName(
-    Type parName1,  // 4 space indent
-    Type parName2,
-    Type parName3) {
+ReturnType LongClassName::
+ReallyReallyReallyLongFunctionName(Type parName1, Type parName2,
+                                   Type parName3) {
   DoSomething();  // 2 space indent
   ...
 }
@@ -293,7 +322,7 @@ Some points to note:
 - A parameter name may be omitted only if the parameter is not used in the 
 function's definition.
 - If you cannot fit the return type and the function name on a single line, 
-break between them.
+break between them or between the class and the method.
 - If you break after the return type of a function declaration or definition, do 
 not indent.
 - The open parenthesis is always on the same line as the function name.
@@ -368,7 +397,8 @@ the ease of editing arguments, and most readability problems are better
 addressed with the following techniques.
 
 ### Looping and branching statements
-At a high level, looping or branching statements consist of the following components:
+At a high level, looping or branching statements consist of the following 
+components:
 
 - One or more statement keywords (e.g. if, else, switch, while, do, or for).
 - One condition or iteration specifier, inside parentheses.
@@ -405,7 +435,7 @@ do {
 } while (condition);
 
 // Good - the same rules apply to loops.
-for (int i = 0; i < 10; ++i) {
+for (int i=0; i<10; ++i) {
   RepeatAThing();
 }
 ```
@@ -528,18 +558,16 @@ indented.
 - Except for the first instance, these keywords should be preceded by a blank 
 line. This rule is optional in small classes.
 - Do not leave a blank line after these keywords.
-- The public section should be first, followed by the protected and finally the 
-private section.
+- All of the member functions are declared first, in public, protected, private groups.
+- Data members are declared at the bottom, again in public (rare, except for nearly pure container classes), protected and private order.
 
 ### Namespace Formatting
-Namespaces do not add an extra level of indentation. For example, use:
+Namespaces should add an extra level (2 spaces) of indentation. For example, use:
 ```cpp
 namespace {
-
-void Foo() {  // Correct.  No extra indentation within namespace.
-  ...
-}
-
+  void Foo() {  // Correct.  No extra indentation within namespace.
+    ...
+  }
 }  // namespace
 ```
 
@@ -573,12 +601,10 @@ if (b) {          // Space after the keyword in conditions and loops.
 }
 while (test) {}   // There is usually no space inside parentheses.
 switch (i) {
-for (int i = 0; i < 5; ++i) {
-// Loops and conditions may have spaces inside parentheses, but this
-// is rare.  Be consistent.
-switch ( i ) {
-if ( test ) {
-for ( int i = 0; i < 5; ++i ) {
+for (int i=0; i<5; ++i) {
+// Loops may have spaces inside parentheses when termination condition is 
+// complicated but this is rare.
+for ( int i = 0; i < getFoo(); ++i ) { // OK
   ...
 
 // Range-based for loops always have a space before and after the colon.
@@ -617,6 +643,9 @@ y = static_cast<char*>(x);
 
 // Spaces between type and pointer are OK, but be consistent.
 std::vector<char *> x;
+
+// Nested tempates MUST have spaces before > for proper syntax
+std::vector<std::vector<std::vector<G4double> > > myVoxels;  // Spaces are required!
 ```
 
 ### Vertical Whitespace
@@ -670,7 +699,19 @@ example, it’s not clear what the parameter means in this call:
     An in-line C-style comment makes the intent obvious:
 
    ```Object.emitName(/*Prefix=*/nullptr);```
-
+- When a function implementation does not (currently!) make use of an argument, 
+it may be useful to show the argument name in the .cc file anyway, but commented 
+out:
+  ```cpp
+  void G4CMPBoundaryUtils::DoSimpleKill(const G4Track& /*aTrack*/,
+                                      const G4Step& /*aStep*/,
+                                      G4ParticleChange& aParticleChange) {
+  ...
+  }
+  ```
+  We aren't using track or step in the current implementation, but we might in 
+  the future (e.g., adding a diagnostic message with the track ID or something).
+- Preprocessor lines can use C-style or C++-style comments.
 - Our license statement uses C-style (see below).
 
 Commenting out large blocks of code is discouraged, but if you really have to do 
@@ -701,19 +742,33 @@ Each file should have the below license statement:
 \***********************************************************************/
 ```
 ### Change tracking
-We have moved to git to track changes in the code.  It is no longer need to 
-track changes at the top of every file like we did in the bad old days.  
+While we use git to track changes in the code, a single commit may involve 
+multiple files at once, and providing the details about each file is both 
+onerous and error-prone. If a commit happens some time after a specific 
+modification, the developer is more likely to forget to mention it.
 
-It is the responcibility of the developer to provide meaningful git commit 
+Having the dated top comments in the file make it much easier to narrow down 
+where something changed and might have caused a problem. We don't require a 
+dated top comment for every commit; just at the time of development. Below is an 
+example.
+
+```cpp
+// 20190704  Add selection of rate model by name, and material specific
+```
+It is still the responcibility of the developer to provide meaningful git commit 
 messages and PR descriptions. 
 
 Further information about change tracking can be found in the repository's 
 CONTRIBUTING.md.
 
-### Doxogen
-We would like to start making more use of Doxogen to auto generate documentation.  
-There are a lot of standards described below, and the more you comment your code 
-the more usefull it will be.  We ask you to, atleast, include file header 
+### Doxygen
+Doxygen is a software package used to automate code documentation.  An 
+introduction to the package is available here: 
+[How to format source code.](https://www.doxygen.nl/manual/docblocks.html)
+
+We would like to start making more use of Doxygen in our code base.  There are a 
+lot of standards described below, and the more you comment your code 
+the more usefull it will be.  We ask you to, at least, include file header 
 comments described below, 
 
 #### File Header Comments
@@ -844,9 +899,8 @@ if (verboseLevel>2) { // Debug: i.e. verboseLevel = 3
 ```
 
 Error messages can be passed to the Geant4 error messaging with ```G4cerr``` 
-which is included in ```globals.hh```.
+which is included in ```globals.hh```. (See the note about ```globals.hh``` [above](#globnote)) 
 ```cpp
-#include "globals.hh"
 ...
 if (!TInvGood[itet]) {
   G4cerr << "ERROR: Non-invertible matrix " << itet << " with " << G4endl;
@@ -857,12 +911,36 @@ if (!TInvGood[itet]) {
 ...
 ```
 
+Exeptions should be emitted using G4Exception with an appropriate 
+G4ExceptionSeverity argument. 
+```cpp
+#include "G4Exception.hh"
+#include "G4ExceptionSeverity.hh"
+...    
+  if (!output.good()) {
+      G4ExceptionDescription msg;
+      msg << "Error opening output file " << fileName;
+      G4Exception("PhononSensitivity::SetOutputFile", "PhonSense003",
+                   FatalException, msg); // "FatalException" from G4ExceptionSeverity
+      output.close();
+  } else { ...
+```
+
 ## Units  <a name="units"></a>
-The native unit of Geant4 (and hence G4CMP) are cm, g, and s.  Often times these 
-are less convient for our development work.  It is strongly encouraged to use 
-CLHEP units available via ```G4SystemOfUnits.hh``` to explicitly define your 
-units.  Even when using cgs units, explicitly defining them can reduce errors 
-and enhance readability. 
+The native unit of Geant4 (and hence G4CMP) are mm, ns, and MeV.  Often times 
+these are less convient for our development work.  
+
+It is **required** to specify your units whenever you define a dimensionful 
+constant, and to never specify units when performing computations with 
+dimensionful variables. 
+
+An important exception in G4CMP is when dealing with masses or momenta in 
+true-mass units (MeV/c2 or kg). Geant4 treats energy, momentum, and mass all in 
+energy units (MeV), so you will find places in the G4CMP code where a mass is 
+divided by c^2 in order to implement functionality from condensed matter theory.
+
+CLHEP units are available via ```G4SystemOfUnits.hh``` to explicitly define your 
+units. 
 ```cpp
 #include "G4SystemOfUnits.hh"
 
@@ -872,6 +950,24 @@ double barCm = 200 * cm;
 ...
 ``` 
 
+You can output the data on the unit you wish. To do so it is sufficient to 
+DIVIDE the data by the corresponding unit:
+
+```cpp     
+G4cout << KineticEnergy/keV << " keV" ;
+G4cout << density/(g/cm3)   << " g/cm3" ;
+```
+(of course: G4cout << KineticEnergy will print the energy in the internal system 
+of units)
+
+
+There is another way to output the data; lets Geant4 chooses the most approriate 
+unit to the actual numerical value of your data. It is sufficient to specify to 
+which category your data belong (Length,Time, Energy ..etc..) for example
+```cpp
+G4cout << G4BestUnit(StepSize, "Length");
+```
+StepSize will be printed in km, m, mm or ... fermi depending of its actual value.
 
 ## Legacy Code (non-conformant code) <a name="legacycode"></a>
 
@@ -879,10 +975,16 @@ G4CMP was inially developed without the above guide.  While there was some effor
 to include the style decision of the orginal developers in this guide it is 
 expected that portions of this code base are non-conformant.  
 
-While maintaining this legacy code, judicious use of reformating may be 
-appropriate for easy of readability and maintance in the future...
+While maintaining this legacy code, try to touch as little of the code as 
+possible.  Gratuitous changes to code in Git make it much harder to identify 
+actual changes to the code when some bug needs to be tracked down. 
 
-...but, **when in doubt leave it alone!** 
+**When in doubt leave it alone!** 
+ 
+However, a developer who wants to do a comprehensive style reformat should 
+create a G4CP JIRA ticket for that issue, keep the ticket up to date with what 
+files are being touched, and make no other code changes that affect functionality.
+
 
 ## Notes <a name="notes"></a>
 This guide was cherry-picked from the [Google C++](https://google.github.io/styleguide/cppguide.html) 
