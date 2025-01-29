@@ -136,7 +136,8 @@ should directly include a header file which properly intends to provide a
 declaration or definition of that symbol. It should not include header files 
 for any other reason.
 
-- If the A.hh class definition uses an object of type B as a data member, or a pass-by-value function argument, then A.hh must have #include B.hh. In this 
+- If the A.hh class definition uses an object of type B as a data member, or a 
+pass-by-value function argument, then A.hh must have #include B.hh. In this 
 case, the compiler needs to know the memory layout of B in order to determine 
 the layout of A.
 - If B is an enumerator (either a value or the typename), or a typedef rather 
@@ -150,11 +151,6 @@ recommended not to rely on transitive inclusions. This allows people to remove
 no-longer-needed #include statements from their headers without breaking 
 clients.
 
-[### Forward Declarations
-Avoid using forward declarations where possible. Instead, include the headers 
-you need.]: (comment)
-
-
 ### Inline Functions <a name="inline"></a>
 
 You can declare functions in a way that allows the compiler to expand them 
@@ -165,13 +161,6 @@ inlined function is small. Overuse of inlining can actually make
 programs slower. Depending on a function's size, inlining it can cause the code 
 size to increase or decrease.
 
-[A decent rule of thumb is to not inline a function if it is more than 10 lines 
-long. Beware of destructors, which are often longer than they appear because of 
-implicit member- and base-destructor calls!
-Another useful rule of thumb: it's typically not cost effective to inline 
-functions with loops or switch statements (unless, in the common case, the loop 
-or switch statement is never executed).]: (comment)
-
 Except for very short code (e.g., one-line SetXYZ() functions), G4CMP does not 
 have function implementations in the .hh file at all. Long implementations 
 generally cannot be inlined anyway, so there's no point to having them in the 
@@ -181,46 +170,29 @@ One exception are the stream-output functions that call to a Print(std::ostream&
 or Dump(std:ostream&) method; those are trivial enough that they can be inlined, 
 and deserve to be.
 
-### Names and Order of Includes
+## Order of Includes
 Include headers in the following order: G4CMP headers, G4 headers, other 
 libraries' headers (e.g. CLHEP), C system headers, C++ standard library headers, 
 then your project's headers.
 
-Headers should only be included using an angle-bracketed path if the library 
-requires you to do so. In particular, the following headers require angle 
-brackets:
-- Don't include ```global.hh```<a name="globnote"></a>
-- C and C++ standard library headers (e.g. <stdlib.h> and \<string>).
-- POSIX, Linux, and Windows system headers (e.g. <unistd.h> and <windows.h>).
-- In rare cases, third_party libraries (e.g. <Python.h>).
+Don't include ```global.hh```<a name="globnote"></a>.  It is included 
+automatically with one of the low level Geant4 .hh files.
+
+1. The .hh file for the class
+1. All the other G4CMP headers
+1. G4 headers 
+1. Other libraries' .hh files (e.g. CLHEP)
+1. System headers (those with <...> notation)
+1. ...with each group sorted alphabetically
+1. Optional line breaks can be place between groups
 
 In MyFoo.cc, whose main purpose is to implement or test the stuff in 
 G4CMPFoo2.hh, order your includes as follows:
-
-1. G4CMPFoo2.hh
-1. A blank line
-1. G4Bar.hh
-1. A blank line
-1. Other libraries' .hh files
-1. A blank line
-1. C system headers, and any other headers in angle brackets with the .h 
-extension, e.g., <unistd.h>, <stdlib.h>, <Python.h>
-1. A blank line
-1. C++ standard library headers (without file extension), e.g., \<algorithm>, 
-\<cstddef>
-1. A blank line
-1. Your project's .hh files
-
-Separate each non-empty group with one blank line.
 
 With the preferred ordering, if the related header G4CMPFoo2.hh omits any 
 necessary includes, the build of MyFoo.cc will break. Thus, this rule ensures 
 that build breaks show up first for the people working on these files, not for 
 innocent people in other packages.
-
-Note that the C headers such as stddef.h are essentially interchangeable with 
-their C++ counterparts (cstddef). Either style is acceptable, but prefer 
-consistency with existing code.
 
 Within each section the includes should be ordered alphabetically. Note that 
 older code might not conform to this rule and should be fixed when convenient.
@@ -229,14 +201,14 @@ For the above example, the includes might look like this:
 
 ```cpp
 #include "G4CMPFoo2.hh"
-
+#include "G4CMPBar.hh"
 #include "G4Bar.hh"
+#include "G4Foo.hh"
 
 #include "CLHEP/Random/DoubConv.h"
 
 #include <sys/types.h>
 #include <unistd.h>
-
 #include <string>
 #include <vector>
 
@@ -260,6 +232,18 @@ Example:
 #include <initializer_list>
 #endif  // LANG_CXX11
 ```
+
+Headers should only be included using an angle-bracketed path if the library 
+requires you to do so. In particular, the following headers require angle 
+brackets:
+
+- C and C++ standard library headers (e.g. <stdlib.h> and \<string>).
+- POSIX, Linux, and Windows system headers (e.g. <unistd.h> and <windows.h>).
+- In rare cases, third_party libraries (e.g. <Python.h>).
+
+Note that the C headers such as stddef.h are essentially interchangeable with 
+their C++ counterparts (cstddef). Either style is acceptable, but prefer 
+consistency with existing code.
 
 ## Formatting <a name="formatting"></a>
 
