@@ -175,8 +175,12 @@ Include headers in the following order: G4CMP headers, G4 headers, other
 libraries' headers (e.g. CLHEP), C system headers, C++ standard library headers, 
 then your project's headers.
 
-Don't include ```global.hh```<a name="globnote"></a>.  It is included 
-automatically with one of the low level Geant4 .hh files.
+Don't include ```globals.hh```<a name="globnote"></a>.  It is usually included 
+automatically with one of the low level Geant4 .hh files.  Occasionally, a .cc 
+file might need "globals.hh", e.g., if it's a "standalone class" that only uses 
+Geant4 data types or low-level objects like G4cout.
+
+The prefered orders is:
 
 1. The .hh file for the class
 1. All the other G4CMP headers
@@ -184,7 +188,7 @@ automatically with one of the low level Geant4 .hh files.
 1. Other libraries' .hh files (e.g. CLHEP)
 1. System headers (those with <...> notation)
 1. ...with each group sorted alphabetically
-1. Optional line breaks can be place between groups
+1. Optional line breaks can be placed between groups
 
 In MyFoo.cc, whose main purpose is to implement or test the stuff in 
 G4CMPFoo2.hh, order your includes as follows:
@@ -230,7 +234,7 @@ Example:
 
 #ifdef LANG_CXX11
 #include <initializer_list>
-#endif  // LANG_CXX11
+#endif  /* LANG_CXX11 */
 ```
 
 Headers should only be included using an angle-bracketed path if the library 
@@ -294,8 +298,14 @@ ReturnType ClassName::ReallyLongFunctionName(Type parName1, Type parName2,
 or if you cannot fit even the first parameter:
 ```cpp
 ReturnType LongClassName::
-ReallyReallyReallyLongFunctionName(Type parName1, Type parName2,
-                                   Type parName3) {
+ReallyReallyReallyLongFunctionName(Type parName1, Type parName2, Type parName3) {
+  DoSomething();  // 2 space indent
+  ...
+}
+
+ReturnType // Also ok, but prefer fewer lines
+LongClassName::ReallyReallyReallyLongFunctionName(Type parName1, Type parName2,
+                                                  Type parName3) {
   DoSomething();  // 2 space indent
   ...
 }
@@ -306,9 +316,10 @@ Some points to note:
 - A parameter name may be omitted only if the parameter is not used in the 
 function's definition.
 - If you cannot fit the return type and the function name on a single line, 
-break between them or between the class and the method.
-- If you break after the return type of a function declaration or definition, do 
-not indent.
+break between them or between the class and the method.  Optimize for 
+readability.
+- If you break after the return type or class of a function declaration or 
+definition, do not indent.
 - The open parenthesis is always on the same line as the function name.
 - There is never a space between the function name and the open parenthesis.
 - There is never a space between the parentheses and the parameters.
@@ -895,7 +906,7 @@ if (!TInvGood[itet]) {
 ...
 ```
 
-Exeptions should be emitted using G4Exception with an appropriate 
+Exceptions should be emitted using G4Exception with an appropriate 
 G4ExceptionSeverity argument. 
 ```cpp
 #include "G4Exception.hh"
@@ -938,20 +949,23 @@ You can output the data on the unit you wish. To do so it is sufficient to
 DIVIDE the data by the corresponding unit:
 
 ```cpp     
-G4cout << KineticEnergy/keV << " keV" ;
-G4cout << density/(g/cm3)   << " g/cm3" ;
+G4cout << KineticEnergy/keV << " keV";
+G4cout << density/(g/cm3)   << " g/cm3";
 ```
-(of course: G4cout << KineticEnergy will print the energy in the internal system 
-of units)
+(Of course ```G4cout << KineticEnergy;``` will print the energy in the internal 
+system of units)
 
-
-There is another way to output the data; lets Geant4 chooses the most approriate 
-unit to the actual numerical value of your data. It is sufficient to specify to 
-which category your data belong (Length,Time, Energy ..etc..) for example
+There is another way to output the data which lets Geant4 chooses the most 
+approriate unit to the actual numerical value of your data. It is sufficient to 
+specify to which category your data belong (Length, Time, Energy, etc) for 
+example:
 ```cpp
 G4cout << G4BestUnit(StepSize, "Length");
 ```
-StepSize will be printed in km, m, mm or ... fermi depending of its actual value.
+StepSize will be printed in km, m, mm, or fermi depending of its actual value.
+
+The unit category names can be printed with the UI command ```/units/list```, or 
+by inspecting the Geant4 source code, G4UnitsTable.cc.
 
 ## Legacy Code (non-conformant code) <a name="legacycode"></a>
 
@@ -966,7 +980,7 @@ actual changes to the code when some bug needs to be tracked down.
 **When in doubt leave it alone!** 
  
 However, a developer who wants to do a comprehensive style reformat should 
-create a G4CP JIRA ticket for that issue, keep the ticket up to date with what 
+create a G4CMP JIRA ticket for that issue, keep the ticket up to date with what 
 files are being touched, and make no other code changes that affect functionality.
 
 
