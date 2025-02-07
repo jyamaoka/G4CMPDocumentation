@@ -553,8 +553,10 @@ indented.
 - Except for the first instance, these keywords should be preceded by a blank 
 line. This rule is optional in small classes.
 - Do not leave a blank line after these keywords.
-- All of the member functions are declared first, in public, protected, private groups.
-- Data members are declared at the bottom, again in public (rare, except for nearly pure container classes), protected and private order.
+- All of the member functions are declared first, in public, protected, private 
+groups.
+- Data members are declared at the bottom, again in public (rare, except for 
+nearly pure container classes), protected and private order.
 
 ### Namespace Formatting
 Namespaces should add an extra level (2 spaces) of indentation. For example, use:
@@ -860,7 +862,7 @@ void Example() { ... }
 
 
 ## Logging and Error Messages <a name="logging"></a>
-_This section is very important and probably needs more work_
+[_This section is very important and probably needs more work_]: (comment)
 
 Every class should have a method (or virtual method) to pass the logging level 
 onto your class.
